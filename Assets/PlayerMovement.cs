@@ -7,7 +7,9 @@ public class PlayerMovement : MonoBehaviour
 {
     public InputActionReference moveInputAction;
     public InputActionReference jumpInputAction;
-    
+    public InputActionReference nextActivePartsAction;
+    public InputActionReference previousActivePartsAction;
+
     public bool isAlive = true;
     public float moveSpeed = 20f;
     public float maxVelocity = 3f;
@@ -22,16 +24,22 @@ public class PlayerMovement : MonoBehaviour
     {
         moveInputAction.action.performed += HandleMoveAction;
         moveInputAction.action.canceled += HandleStopMoveAction;
-        
+
         jumpInputAction.action.performed += HandleJumpAction;
+
+        nextActivePartsAction.action.performed += HandleNextActivePartsAction;
+        previousActivePartsAction.action.performed += HandlePreviousActivePartsAction;
     }
 
     private void OnDisable()
     {
         moveInputAction.action.performed -= HandleMoveAction;
         moveInputAction.action.canceled -= HandleStopMoveAction;
-        
-        jumpInputAction.action.performed += HandleJumpAction;
+
+        jumpInputAction.action.performed -= HandleJumpAction;
+
+        nextActivePartsAction.action.performed -= HandleNextActivePartsAction;
+        previousActivePartsAction.action.performed -= HandlePreviousActivePartsAction;
     }
 
     private void HandleMoveAction(InputAction.CallbackContext context)
@@ -49,6 +57,18 @@ public class PlayerMovement : MonoBehaviour
     private void HandleJumpAction(InputAction.CallbackContext obj)
     {
         JumpOnInput();
+    }
+
+    private void HandleNextActivePartsAction(InputAction.CallbackContext obj)
+    {
+        Debug.Log("Next active part!");
+        // TODO
+    }
+
+    private void HandlePreviousActivePartsAction(InputAction.CallbackContext obj)
+    {
+        Debug.Log("Previous active part!");
+        // TODO
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -71,15 +91,13 @@ public class PlayerMovement : MonoBehaviour
             moveVector.y = -moveVector.y;
 #endif
 
-            
             if (moveVector != Vector2.zero)
             {
                 rb.AddForce(moveVector * moveSpeed);
-                
+
                 var velocity = rb.linearVelocity;
                 velocity.x = Mathf.Clamp(velocity.x, -maxVelocity, maxVelocity);
                 rb.linearVelocity = velocity;
-                
             }
         }
     }
@@ -96,7 +114,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (other.gameObject.CompareTag("Wall"))
+        if (other.gameObject.CompareTag("Wall") || other.gameObject.CompareTag("SlideWall"))
         {
             isGrounded = true;
         }
